@@ -1,0 +1,18 @@
+[package]
+name = "test-app"
+version = "0.1.0"
+authors = ["Lizzie Davison <lizzie@hubblehq.com>"]
+license = "MIT"
+build = "build.rs"
+exclude = ["artifacts.json", "index.node"]
+
+[lib]
+name = "test_app"
+crate-type = ["cdylib"]
+
+[build-dependencies]
+neon-build = "0.3.2"
+
+[dependencies]
+neon = "0.3.2"
+num_cpus = "1.4"
