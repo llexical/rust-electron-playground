@@ -8,5 +8,10 @@
   <body>
     <h1>💖 Hello World!</h1>
     <p>Welcome to your Electron application.</p>
+    <p>You have <span id="thread_count"></span> threads</p>
   </body>
+  <script>
+    const native = require('../native');
+    document.getElementById('thread_count').innerText = native.thread_count();
+  </script>
 </html>
