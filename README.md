@@ -6,5 +6,6 @@ Playing around with Rust and Electron
 - Rust
 
 ## Setup
-- `npm build`
+- `npm install`
+- `npm run build`
 - `npm start`
