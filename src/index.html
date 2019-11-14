@@ -9,9 +9,32 @@
     <h1>💖 Hello World!</h1>
     <p>Welcome to your Electron application.</p>
     <p>You have <span id="thread_count"></span> threads</p>
+
+    <h2>Register</h2>
+    <form id="registration-form">
+      <div id="form-errors"></div>
+      <div>
+        <label for="rigster-username">Username</label>
+        <input type="text" id="register-username" required/>
+      </div>
+      <div>
+        <label for="register-password">Password</label>
+        <input type="password" id="register-password" required/>
+      </div>
+      <button type="submit" id="register-submit">Register</button>
+    </form>
   </body>
   <script>
     const native = require('../native');
-    document.getElementById('thread_count').innerText = native.thread_count();
+
+    document.getElementById('registration-form').onsubmit = (e) => {
+      e.preventDefault();
+
+      const username = document.getElementById('register-username').value;
+      const password = document.getElementById('register-password').value;
+      
+      const response = native.register_user(username, password);
+      console.log('Ohh lets see', response);
+    }
   </script>
 </html>
