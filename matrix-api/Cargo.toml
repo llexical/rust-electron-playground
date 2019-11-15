@@ -1,5 +1,5 @@
 [package]
-name = "messenger"
+name = "matrix-api"
 version = "0.1.0"
 authors = ["Robin Neal <robinneal429@gmail.com>"]
 edition = "2018"

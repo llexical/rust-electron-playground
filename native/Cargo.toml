@@ -1,5 +1,5 @@
 [package]
-name = "test-app"
+name = "test_app"
 version = "0.1.0"
 authors = ["Lizzie Davison <lizzie@hubblehq.com>"]
 license = "MIT"
@@ -20,3 +20,4 @@ serde = "1.0.101"
 serde_derive = "1.0.101"
 reqwest = "0.9.22"
 serde_json = "1.0.41"
+matrix-api = { path = '../matrix-api'}

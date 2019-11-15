@@ -1,6 +1,6 @@
-use reqwest::{StatusCode};
-use std::collections::HashMap;
+use reqwest::StatusCode;
 use serde_json::json;
+use std::collections::HashMap;
 
 use crate::api;
 
@@ -10,12 +10,12 @@ pub static API_URL: &str = "http://my.matrix.host:8008/_matrix/client/r0/registe
 pub struct UserInteractiveAuthenticationModel {
    session: String,
    flows: Vec<UserAuthFlow>,
-   params: HashMap<String, String>
+   params: HashMap<String, String>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct UserAuthFlow {
-   stages: Vec<String>
+   stages: Vec<String>,
 }
 
 #[derive(Serialize, Debug)]
@@ -30,7 +30,7 @@ pub struct AuthModel {
 #[derive(Serialize, Debug)]
 pub enum RegistrationKind {
    Guest,
-   User
+   User,
 }
 
 #[derive(Serialize, Debug)]
@@ -47,7 +47,7 @@ pub struct RegistrationResponse {
    user_id: String,
    home_server: String,
    access_token: String,
-   device_id: String
+   device_id: String,
 }
 
 pub fn auth_request() -> Result<UserInteractiveAuthenticationModel, api::ApiError> {
@@ -63,15 +63,18 @@ pub fn auth_select_flow(model: UserInteractiveAuthenticationModel) -> AuthModel 
    let stage = flow.stages[0].to_owned();
 
    let auth: AuthModel = AuthModel {
-       session: model.session,
-       r#type: stage
+      session: model.session,
+      r#type: stage,
    };
 
-   println!("{}", format!(
-       "Session: {session}, Stage: {stage}",
-       session = auth.session,
-       stage = auth.r#type
-   ));
+   println!(
+      "{}",
+      format!(
+         "Session: {session}, Stage: {stage}",
+         session = auth.session,
+         stage = auth.r#type
+      )
+   );
 
    return auth;
 }
@@ -80,16 +83,17 @@ pub fn register(model: RegistrationModel) -> Result<RegistrationResponse, api::A
    let mut response = api::post(API_URL, &model)?;
 
    match response.status() {
-       StatusCode::OK => {
-           let success = response.json()?;
-           Ok(success)
-       },
-       StatusCode::BAD_REQUEST | StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN | StatusCode::TOO_MANY_REQUESTS => {
-           Err(api::ApiError::from(response))
-       },
-       s => {
-          println!("Received response status: {:?}", s);
-          Err(api::ApiError::from(s))
-       }
+      StatusCode::OK => {
+         let success = response.json()?;
+         Ok(success)
+      }
+      StatusCode::BAD_REQUEST
+      | StatusCode::UNAUTHORIZED
+      | StatusCode::FORBIDDEN
+      | StatusCode::TOO_MANY_REQUESTS => Err(api::ApiError::from(response)),
+      s => {
+         println!("Received response status: {:?}", s);
+         Err(api::ApiError::from(s))
+      }
    }
 }
