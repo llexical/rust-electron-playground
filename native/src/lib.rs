@@ -88,15 +88,7 @@ fn make_register_request(
       "initial_device_display_name": "rustapp"
     });
 
-    let mut response = Client::new().post(request_url).json(&request_body).send();
-
-    let mut response = match response {
-        Err(e) => println!("Error here"),
-        Ok(response) => response,
-    };
-
-    println!("response {}", response.status());
-    return response.json();
+    return Client::new().post(request_url).json(&request_body).send()?.json();
 }
 
 fn handler(e: reqwest::Error) -> String {
