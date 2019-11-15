@@ -77,18 +77,22 @@ pub enum MatrixErrorCode {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct MatrixErrorResponse {
+  #[serde(rename = "errcode")]
+  code: MatrixErrorCode,
+  #[serde(rename = "error")]
+  message: String,
+}
+
+#[derive(Deserialize, Debug)]
 #[serde(untagged)]
 pub enum ApiError {
   Network {
      kind: Kind,
      message: String
   },
-  Response {
-    #[serde(rename = "errcode")]
-    code: MatrixErrorCode,
-    #[serde(rename = "error")]
-    message: String,
-  },
+  Http(u16, Option<&'static str>),
+  Response(u16, MatrixErrorResponse),
   Serialization,
   Unknown
 }
@@ -102,7 +106,8 @@ impl fmt::Display for crate::api::ApiError {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
       match self {
         ApiError::Network { kind: _, ref message } => write!(f, "Network error occurred: {}", message),
-        ApiError::Response { code: _, ref message } => write!(f, "Response error: {}", message),
+        ApiError::Http(code, _) => write!(f, "Http error: {}", code),
+        ApiError::Response(_, r) => write!(f, "Response error: {}", r.message),
         ApiError::Serialization => write!(f, "Serialization error occured"),
         ApiError::Unknown => write!(f, "Unknown error occured")
       }
@@ -143,6 +148,21 @@ impl From<reqwest::Error> for ApiError {
       ApiError::Serialization
     } else {
       ApiError::Unknown
+    }
+  }
+}
+
+impl From<reqwest::StatusCode> for ApiError {
+  fn from(status: reqwest::StatusCode) -> ApiError {
+    ApiError::Http(status.as_u16(), status.canonical_reason())
+  }
+}
+
+impl From<reqwest::Response> for ApiError {
+  fn from(mut response: reqwest::Response) -> ApiError {
+    match response.json() {
+      Ok(error) => ApiError::Response(response.status().as_u16(), error),
+      Err(_) => ApiError::from(response.status())
     }
   }
 }

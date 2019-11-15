@@ -84,13 +84,12 @@ pub fn register(model: RegistrationModel) -> Result<RegistrationResponse, api::A
            let success = response.json()?;
            Ok(success)
        },
-       StatusCode::BAD_REQUEST => {
-           let error : api::ApiError = response.json()?;
-           Err(error)
+       StatusCode::BAD_REQUEST | StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN | StatusCode::TOO_MANY_REQUESTS => {
+           Err(api::ApiError::from(response))
        },
        s => {
           println!("Received response status: {:?}", s);
-          Err(api::ApiError::Unknown)
+          Err(api::ApiError::from(s))
        }
    }
 }
