@@ -3,24 +3,26 @@ extern crate neon;
 extern crate matrix_api;
 extern crate reqwest;
 
+use matrix_api::api::ApiError;
+use matrix_api::*;
 use neon::prelude::*;
 
 fn register_flow(username: String, password: String) -> Result<(), matrix_api::api::ApiError> {
-    let interactive_auth_model = matrix_api::registration::auth_request()?;
+    let interactive_auth_model = registration::auth_request()?;
 
-    let auth = matrix_api::registration::auth_select_flow(interactive_auth_model);
+    let auth = registration::auth_select_flow(interactive_auth_model);
 
     println!("{}, {}", username, password);
 
-    let body = matrix_api::registration::RegistrationModel {
+    let body = registration::RegistrationModel {
         auth,
-        kind: matrix_api::registration::RegistrationKind::User,
+        kind: registration::RegistrationKind::User,
         username,
         password,
         initial_device_display_name: String::from("cli"),
     };
 
-    matrix_api::registration::register(body)?;
+    registration::register(body)?;
 
     Ok(())
 }
@@ -45,7 +47,24 @@ fn register_user(mut cx: FunctionContext) -> JsResult<JsObject> {
 
     match register_flow(username, password) {
         Err(e) => {
-            let (mut cx, response) = cx_response(cx, false, format!("{}", e));
+            let (mut cx, response) = match e {
+                ApiError::Network { kind: _, message } => cx_response(cx, false, message),
+                ApiError::Http(status_code, message) => match message {
+                    Some(m) => cx_response(cx, false, String::from(m)),
+                    None => cx_response(cx, false, status_code.to_string()),
+                },
+                ApiError::Response(_, m) => cx_response(cx, false, m.message),
+                ApiError::Serialization => cx_response(
+                    cx,
+                    false,
+                    String::from("There was a serialization error m8."),
+                ),
+                ApiError::Unknown => cx_response(
+                    cx,
+                    false,
+                    String::from("This error is unknown, please panic."),
+                ),
+            };
             return cx.throw(response);
         }
         Ok(_) => Ok(cx_response(cx, true, format!("")).1),

@@ -5,7 +5,7 @@ use std::fmt;
 pub enum Kind {
   Http,
   Redirect,
-  Timeout
+  Timeout,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -73,28 +73,25 @@ pub enum MatrixErrorCode {
   #[serde(rename = "M_RESOURCE_LIMIT_EXCEEDED")]
   ResourceLimitExceeded,
   #[serde(rename = "M_CANNOT_LEAVE_SERVER_NOTICE_ROOM")]
-  CannotLeaveServerNoticeRoom
+  CannotLeaveServerNoticeRoom,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct MatrixErrorResponse {
   #[serde(rename = "errcode")]
-  code: MatrixErrorCode,
+  pub code: MatrixErrorCode,
   #[serde(rename = "error")]
-  message: String,
+  pub message: String,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(untagged)]
 pub enum ApiError {
-  Network {
-     kind: Kind,
-     message: String
-  },
+  Network { kind: Kind, message: String },
   Http(u16, Option<&'static str>),
   Response(u16, MatrixErrorResponse),
   Serialization,
-  Unknown
+  Unknown,
 }
 
 // Generation of an error is completely separate from how it is displayed.
@@ -104,21 +101,24 @@ pub enum ApiError {
 // which string failed to parse without modifying our types to carry that information.
 impl fmt::Display for crate::api::ApiError {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-      match self {
-        ApiError::Network { kind: _, ref message } => write!(f, "Network error occurred: {}", message),
-        ApiError::Http(code, _) => write!(f, "Http error: {}", code),
-        ApiError::Response(_, r) => write!(f, "Response error: {}", r.message),
-        ApiError::Serialization => write!(f, "Serialization error occured"),
-        ApiError::Unknown => write!(f, "Unknown error occured")
-      }
+    match self {
+      ApiError::Network {
+        kind: _,
+        ref message,
+      } => write!(f, "Network error occurred: {}", message),
+      ApiError::Http(code, _) => write!(f, "Http error: {}", code),
+      ApiError::Response(_, r) => write!(f, "Response error: {}", r.message),
+      ApiError::Serialization => write!(f, "Serialization error occured"),
+      ApiError::Unknown => write!(f, "Unknown error occured"),
+    }
   }
 }
 
 // This is important for other errors to wrap this one.
 impl error::Error for ApiError {
-  fn source(&self) -> Option<&(dyn error::Error + 'static)> {    
-      // Generic error, underlying cause isn't tracked.
-      None
+  fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+    // Generic error, underlying cause isn't tracked.
+    None
   }
 }
 
@@ -127,17 +127,17 @@ impl From<reqwest::Error> for ApiError {
     if error.is_http() {
       ApiError::Network {
         kind: Kind::Http,
-        message: String::from("HTTP error occured")
+        message: String::from("HTTP error occured"),
       }
     } else if error.is_redirect() {
       ApiError::Network {
         kind: Kind::Redirect,
-        message: String::from("Redirect loop")
+        message: String::from("Redirect loop"),
       }
     } else if error.is_timeout() {
       ApiError::Network {
         kind: Kind::Timeout,
-        message: String::from("Network request timed out")
+        message: String::from("Network request timed out"),
       }
     } else if error.is_serialization() {
       let serde_error = match error.get_ref() {
@@ -162,18 +162,19 @@ impl From<reqwest::Response> for ApiError {
   fn from(mut response: reqwest::Response) -> ApiError {
     match response.json() {
       Ok(error) => ApiError::Response(response.status().as_u16(), error),
-      Err(_) => ApiError::from(response.status())
+      Err(_) => ApiError::from(response.status()),
     }
   }
 }
 
 pub type Result<T> = ::std::result::Result<T, ApiError>;
 
-pub fn post<TModel: serde::Serialize + ?Sized>(url: &str, model: &TModel) -> Result<reqwest::Response> {
+pub fn post<TModel: serde::Serialize + ?Sized>(
+  url: &str,
+  model: &TModel,
+) -> Result<reqwest::Response> {
   let client = reqwest::Client::new();
-  let response = client.post(url)
-       .json(model)
-       .send()?;
+  let response = client.post(url).json(model).send()?;
 
   Ok(response)
 }
