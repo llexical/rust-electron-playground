@@ -2,5 +2,6 @@
 
 members = [
     "matrix-api",
+    "matrix-cli",
     "native",
 ]

@@ -1,11 +1,9 @@
-#[macro_use]
-extern crate serde_derive;
-extern crate reqwest;
+extern crate matrix_api;
+
 use std::io;
 use std::io::{Write};
-
-mod api;
-mod registration;
+use matrix_api::api::ApiError;
+use matrix_api::*;
 
 fn request_input(label: &str, buffer: &mut String) {
    print!("{}: ", label);
@@ -16,7 +14,7 @@ fn request_input(label: &str, buffer: &mut String) {
    }
 }
 
-fn register_flow() -> Result<(), api::ApiError> {
+fn register_flow() -> Result<(), ApiError> {
     let interactive_auth_model = registration::auth_request()?;
 
     println!("step 1");

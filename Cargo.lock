@@ -496,6 +496,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "matrix-cli"
+version = "0.1.0"
+dependencies = [
+ "matrix-api 0.1.0",
+]
+
+[[package]]
 name = "maybe-uninit"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
