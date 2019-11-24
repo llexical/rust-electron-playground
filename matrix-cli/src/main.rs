@@ -1,50 +1,29 @@
 extern crate matrix_api;
 
-use std::io;
-use std::io::{Write};
-use matrix_api::api::ApiError;
-use matrix_api::*;
+mod io;
+mod login;
+mod register;
 
-fn request_input(label: &str, buffer: &mut String) {
-   print!("{}: ", label);
-   io::stdout().flush().unwrap();
-   match io::stdin().read_line(buffer) {
-       Ok(_) => { *buffer = buffer.trim().to_string() },
-       Err(_) => println!("failed to read {}", label),
-   }
+fn request_action() -> String {
+    println!("Select ation:");
+    println!("- register (r)");
+    println!("- login (l)");
+    let mut action = String::new();
+    io::request_input("", &mut action);
+    action
 }
 
-fn register_flow() -> Result<(), ApiError> {
-    let interactive_auth_model = registration::auth_request()?;
-
-    println!("step 1");
-    let auth = registration::auth_select_flow(interactive_auth_model);
- 
-    let mut username = String::new();
-    request_input("Username", &mut username);
- 
-    let mut password = String::new();
-    request_input("Password", &mut password);
- 
-    println!("{}, {}", username, password);
- 
-    let body = registration::RegistrationModel {
-        auth,
-        kind: registration::RegistrationKind::User,
-        username,
-        password,
-        initial_device_display_name: String::from("cli")
-    };
- 
-    registration::register(body)?;
-
-    Ok(())
-}
-
-fn main() {
-    match register_flow() {
-        Err(e) => println!("Error: {}", e),
-        Ok(_) => println!("Success")
+fn select_action(action: String) -> Result<(), matrix_api::api::ApiError> {
+    match action.as_ref() {
+        "r" => register::register_flow(),
+        "l" => login::login_flow(),
+        _ => select_action(request_action()),
     }
 }
 
+fn main() {
+    match select_action(request_action()) {
+        Err(e) => println!("Error: {}", e),
+        Ok(_) => println!("Success"),
+    }
+}

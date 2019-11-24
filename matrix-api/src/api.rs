@@ -1,3 +1,5 @@
+use serde_json::Value;
+use std::collections::HashMap;
 use std::error;
 use std::fmt;
 
@@ -82,6 +84,8 @@ pub struct MatrixErrorResponse {
   pub code: MatrixErrorCode,
   #[serde(rename = "error")]
   pub message: String,
+  #[serde(flatten)]
+  params: HashMap<String, Value>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -175,6 +179,23 @@ pub fn post<TModel: serde::Serialize + ?Sized>(
 ) -> Result<reqwest::Response> {
   let client = reqwest::Client::new();
   let response = client.post(url).json(model).send()?;
+
+  Ok(response)
+}
+
+pub fn get(url: &str) -> Result<reqwest::Response> {
+  let client = reqwest::Client::new();
+  let response = client.get(url).send()?;
+
+  Ok(response)
+}
+
+pub fn get_query<TModel: serde::Serialize + ?Sized>(
+  url: &str,
+  model: &TModel,
+) -> Result<reqwest::Response> {
+  let client = reqwest::Client::new();
+  let response = client.get(url).query(model).send()?;
 
   Ok(response)
 }

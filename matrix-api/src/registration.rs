@@ -3,6 +3,8 @@ use serde_json::json;
 use std::collections::HashMap;
 
 use crate::api;
+use crate::api::ApiError;
+use crate::api::Result;
 
 pub static API_URL: &str = "http://my.matrix.host:8008/_matrix/client/r0/register";
 
@@ -50,7 +52,7 @@ pub struct RegistrationResponse {
    device_id: String,
 }
 
-pub fn auth_request() -> Result<UserInteractiveAuthenticationModel, api::ApiError> {
+pub fn auth_request() -> Result<UserInteractiveAuthenticationModel> {
    let mut auth_response = api::post(API_URL, &json!({}))?;
 
    let json = auth_response.json()?;
@@ -79,7 +81,7 @@ pub fn auth_select_flow(model: UserInteractiveAuthenticationModel) -> AuthModel 
    return auth;
 }
 
-pub fn register(model: RegistrationModel) -> Result<RegistrationResponse, api::ApiError> {
+pub fn register(model: RegistrationModel) -> Result<RegistrationResponse> {
    let mut response = api::post(API_URL, &model)?;
 
    match response.status() {
@@ -90,10 +92,7 @@ pub fn register(model: RegistrationModel) -> Result<RegistrationResponse, api::A
       StatusCode::BAD_REQUEST
       | StatusCode::UNAUTHORIZED
       | StatusCode::FORBIDDEN
-      | StatusCode::TOO_MANY_REQUESTS => Err(api::ApiError::from(response)),
-      s => {
-         println!("Received response status: {:?}", s);
-         Err(api::ApiError::from(s))
-      }
+      | StatusCode::TOO_MANY_REQUESTS => Err(ApiError::from(response)),
+      s => Err(ApiError::from(s)),
    }
 }
