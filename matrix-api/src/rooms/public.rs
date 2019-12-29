@@ -1,0 +1,67 @@
+use reqwest::StatusCode;
+use serde_derive::{Deserialize, Serialize};
+
+use crate::api;
+use crate::api::ApiError;
+use crate::api::Result;
+
+pub static API_URL: &str = "http://my.matrix.host:8008/_matrix/client/r0/publicRooms";
+
+#[derive(Serialize, Debug)]
+pub struct PublicRoomsQuery {
+  pub limit: i64,
+  pub since: String,
+  pub server: String,
+}
+
+#[derive(Serialize, Debug)]
+pub struct PublicRoomsRequest {}
+
+#[derive(Deserialize, Debug)]
+pub struct PublicRoomsResponse {
+  pub chunk: Vec<PublicRoomsChunk>,
+  pub next_batch: String,
+  pub home_server: String,
+  pub prev_batch: String,
+  pub total_room_count_estimate: i64,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct PublicRoomsChunk {
+  pub aliases: Vec<String>,
+  pub canonical_alias: String,
+  pub name: String,
+  pub num_joined_members: i64,
+  pub room_id: String,
+  pub topic: String,
+  pub world_readable: bool,
+  pub guest_can_join: bool,
+  pub avatar_url: String,
+}
+
+pub fn list_public_rooms(query: PublicRoomsQuery) -> Result<PublicRoomsResponse> {
+  let mut response = api::get_query(API_URL, &query)?;
+
+  match response.status() {
+    StatusCode::OK => {
+      let success = response.json()?;
+      Ok(success)
+    }
+    s => Err(ApiError::from(s)),
+  }
+}
+
+pub fn filter_public_rooms(
+  query: PublicRoomsQuery,
+  request: PublicRoomsRequest,
+) -> Result<PublicRoomsResponse> {
+  let mut response = api::post_query(API_URL, &request, &query)?;
+
+  match response.status() {
+    StatusCode::OK => {
+      let success = response.json()?;
+      Ok(success)
+    }
+    s => Err(ApiError::from(s)),
+  }
+}
