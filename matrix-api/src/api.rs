@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use std::error;
 use std::fmt;
 
+use crate::client::MatrixClient;
+
 #[derive(Deserialize, Debug, Clone)]
 pub enum Kind {
   Http,
@@ -174,28 +176,36 @@ impl From<reqwest::Response> for ApiError {
 pub type Result<T> = ::std::result::Result<T, ApiError>;
 
 pub fn post<TModel: serde::Serialize + ?Sized>(
-  url: &str,
+  api_client: &MatrixClient,
+  endpoint: &str,
   model: &TModel,
 ) -> Result<reqwest::Response> {
   let client = reqwest::Client::new();
-  let response = client.post(url).json(model).send()?;
+  let url = format!("{}{}", api_client.get_base_url(), endpoint);
+
+  let response = client.post(&url).json(model).send()?;
 
   Ok(response)
 }
 
-pub fn get(url: &str) -> Result<reqwest::Response> {
+pub fn get(api_client: &MatrixClient, endpoint: &str) -> Result<reqwest::Response> {
   let client = reqwest::Client::new();
-  let response = client.get(url).send()?;
+  let url = format!("{}{}", api_client.get_base_url(), endpoint);
+
+  let response = client.get(&url).send()?;
 
   Ok(response)
 }
 
 pub fn get_query<TModel: serde::Serialize + ?Sized>(
-  url: &str,
+  api_client: &MatrixClient,
+  endpoint: &str,
   model: &TModel,
 ) -> Result<reqwest::Response> {
   let client = reqwest::Client::new();
-  let response = client.get(url).query(model).send()?;
+  let url = format!("{}{}", api_client.get_base_url(), endpoint);
+
+  let response = client.get(&url).query(model).send()?;
 
   Ok(response)
 }

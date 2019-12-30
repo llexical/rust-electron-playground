@@ -4,6 +4,8 @@ mod io;
 mod login;
 mod register;
 
+pub static MATRIX_API_URL: &str = "http://my.matrix.host:8008";
+
 fn request_action() -> String {
     println!("Select ation:");
     println!("- register (r)");
