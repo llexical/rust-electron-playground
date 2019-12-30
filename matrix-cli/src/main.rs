@@ -6,6 +6,7 @@ mod list_public_rooms;
 mod login;
 mod register;
 
+use matrix_api::client::ApiClient;
 pub static MATRIX_API_URL: &str = "http://my.matrix.host:8008";
 
 fn request_action() -> String {
@@ -30,6 +31,17 @@ fn select_action(
     }
 }
 
+fn continue_check() -> bool {
+    println!("Continue? (y/n)");
+    let mut action = String::new();
+    io::request_input("", &mut action);
+    match action.as_ref() {
+        "Y" | "y" => true,
+        "N" | "n" => false,
+        _ => continue_check(),
+    }
+}
+
 fn main() {
     let matrix_client = MatrixClient::new(MATRIX_API_URL);
 
@@ -37,6 +49,10 @@ fn main() {
         match select_action(&matrix_client, request_action()) {
             Err(e) => println!("Error: {}", e),
             Ok(_) => println!("Success"),
+        }
+        if !continue_check() {
+            println!("Goodbye!");
+            break;
         }
         println!();
     }
