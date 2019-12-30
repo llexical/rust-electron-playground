@@ -5,8 +5,9 @@ use crate::api;
 use crate::api::ApiError;
 use crate::api::Result;
 use crate::auth::AuthenticationTypes;
+use crate::client::MatrixClient;
 
-pub static API_URL: &str = "http://my.matrix.host:8008/_matrix/client/r0/login";
+pub static ENDPOINT: &str = "/_matrix/client/r0/login";
 
 #[derive(Deserialize, Debug)]
 pub struct LoginFlows {
@@ -80,8 +81,8 @@ pub struct LoginResponse {
   pub well_known: Option<DiscoveryInformation>,
 }
 
-pub fn get_login_flows() -> Result<LoginFlows> {
-  let mut response = api::get(API_URL)?;
+pub fn get_login_flows(client: &MatrixClient) -> Result<LoginFlows> {
+  let mut response = api::get(&client, ENDPOINT)?;
 
   match response.status() {
     StatusCode::OK => {
@@ -93,8 +94,8 @@ pub fn get_login_flows() -> Result<LoginFlows> {
   }
 }
 
-pub fn login(model: LoginModel) -> Result<LoginResponse> {
-  let mut response = api::post(API_URL, &model)?;
+pub fn login(client: &MatrixClient, model: LoginModel) -> Result<LoginResponse> {
+  let mut response = api::post(&client, ENDPOINT, &model)?;
 
   match response.status() {
     StatusCode::OK => {

@@ -5,8 +5,9 @@ use std::collections::HashMap;
 use crate::api;
 use crate::api::ApiError;
 use crate::api::Result;
+use crate::client::MatrixClient;
 
-pub static API_URL: &str = "http://my.matrix.host:8008/_matrix/client/r0/register";
+pub static ENDPOINT: &str = "/_matrix/client/r0/register";
 
 #[derive(Deserialize, Debug)]
 pub struct UserInteractiveAuthenticationModel {
@@ -52,8 +53,8 @@ pub struct RegistrationResponse {
    device_id: String,
 }
 
-pub fn auth_request() -> Result<UserInteractiveAuthenticationModel> {
-   let mut auth_response = api::post(API_URL, &json!({}))?;
+pub fn auth_request(client: &MatrixClient) -> Result<UserInteractiveAuthenticationModel> {
+   let mut auth_response = api::post(&client, ENDPOINT, &json!({}))?;
 
    let json = auth_response.json()?;
 
@@ -81,8 +82,8 @@ pub fn auth_select_flow(model: UserInteractiveAuthenticationModel) -> AuthModel 
    return auth;
 }
 
-pub fn register(model: RegistrationModel) -> Result<RegistrationResponse> {
-   let mut response = api::post(API_URL, &model)?;
+pub fn register(client: &MatrixClient, model: RegistrationModel) -> Result<RegistrationResponse> {
+   let mut response = api::post(client, ENDPOINT, &model)?;
 
    match response.status() {
       StatusCode::OK => {

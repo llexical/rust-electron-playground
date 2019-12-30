@@ -1,7 +1,9 @@
 use matrix_api::api::ApiError;
+use matrix_api::client::MatrixClient;
 use matrix_api::*;
 
 use crate::io::request_input;
+use crate::MATRIX_API_URL;
 
 fn select_flow(flow_count: usize) -> usize {
   let mut selected_flow = String::new();
@@ -38,13 +40,15 @@ fn login_password() -> Result<(), ApiError> {
     initial_device_display_name: String::from("cli"),
   };
 
-  login::login(body)?;
+  let matrix_client = MatrixClient::new(MATRIX_API_URL);
+  login::login(&matrix_client, body)?;
 
   Ok(())
 }
 
 pub fn login_flow() -> Result<(), ApiError> {
-  let flows = login::get_login_flows()?;
+  let matrix_client = MatrixClient::new(MATRIX_API_URL);
+  let flows = login::get_login_flows(&matrix_client)?;
   let flow_count = flows.flows.len();
   println!("Available flows: ");
   for i in 0..flow_count {

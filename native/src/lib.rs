@@ -4,11 +4,15 @@ extern crate matrix_api;
 extern crate reqwest;
 
 use matrix_api::api::ApiError;
+use matrix_api::client::MatrixClient;
 use matrix_api::*;
 use neon::prelude::*;
 
+pub static MATRIX_API_URL: &str = "http://my.matrix.host:8008";
+
 fn register_flow(username: String, password: String) -> Result<(), matrix_api::api::ApiError> {
-    let interactive_auth_model = registration::auth_request()?;
+    let matrix_client = MatrixClient::new(MATRIX_API_URL);
+    let interactive_auth_model = registration::auth_request(&matrix_client)?;
 
     let auth = registration::auth_select_flow(interactive_auth_model);
 
@@ -22,7 +26,7 @@ fn register_flow(username: String, password: String) -> Result<(), matrix_api::a
         initial_device_display_name: String::from("cli"),
     };
 
-    registration::register(body)?;
+    registration::register(&matrix_client, body)?;
 
     Ok(())
 }

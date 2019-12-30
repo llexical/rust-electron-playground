@@ -6,6 +6,7 @@ mod login;
 mod register;
 
 use matrix_api::client::ApiClient;
+pub static MATRIX_API_URL: &str = "http://my.matrix.host:8008";
 
 fn request_action() -> String {
     println!("Select ation:");

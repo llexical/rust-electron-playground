@@ -4,8 +4,9 @@ use serde_derive::{Deserialize, Serialize};
 use crate::api;
 use crate::api::ApiError;
 use crate::api::Result;
+use crate::client::MatrixClient;
 
-pub static API_URL: &str = "http://my.matrix.host:8008/_matrix/client/r0/publicRooms";
+pub static ENDPOINT: &str = "/_matrix/client/r0/publicRooms";
 
 #[derive(Serialize, Debug)]
 pub struct PublicRoomsQuery {
@@ -38,8 +39,11 @@ pub struct PublicRoomsChunk {
   pub avatar_url: Option<String>,
 }
 
-pub fn list_public_rooms(query: PublicRoomsQuery) -> Result<PublicRoomsResponse> {
-  let mut response = api::get_query(API_URL, &query)?;
+pub fn list_public_rooms(
+  client: &MatrixClient,
+  query: PublicRoomsQuery,
+) -> Result<PublicRoomsResponse> {
+  let mut response = api::get_query(&client, ENDPOINT, &query)?;
 
   match response.status() {
     StatusCode::OK => {
@@ -51,10 +55,11 @@ pub fn list_public_rooms(query: PublicRoomsQuery) -> Result<PublicRoomsResponse>
 }
 
 pub fn filter_public_rooms(
+  client: &MatrixClient,
   query: PublicRoomsQuery,
   request: PublicRoomsRequest,
 ) -> Result<PublicRoomsResponse> {
-  let mut response = api::post_query(API_URL, &request, &query)?;
+  let mut response = api::post_query(&client, ENDPOINT, &request, &query)?;
 
   match response.status() {
     StatusCode::OK => {
