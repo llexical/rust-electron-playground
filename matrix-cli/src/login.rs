@@ -3,7 +3,6 @@ use matrix_api::client::MatrixClient;
 use matrix_api::*;
 
 use crate::io::request_input;
-use crate::MATRIX_API_URL;
 
 fn select_flow(flow_count: usize) -> usize {
   let mut selected_flow = String::new();
@@ -24,7 +23,7 @@ fn select_flow(flow_count: usize) -> usize {
   }
 }
 
-fn login_password() -> Result<(), ApiError> {
+fn login_password(matrix_client: &MatrixClient) -> Result<(), ApiError> {
   let mut username = String::new();
   request_input("Username", &mut username);
   let identifier = login::UserIdentifier::User { user: username };
@@ -40,14 +39,12 @@ fn login_password() -> Result<(), ApiError> {
     initial_device_display_name: String::from("cli"),
   };
 
-  let matrix_client = MatrixClient::new(MATRIX_API_URL);
   login::login(&matrix_client, body)?;
 
   Ok(())
 }
 
-pub fn login_flow() -> Result<(), ApiError> {
-  let matrix_client = MatrixClient::new(MATRIX_API_URL);
+pub fn login_flow(matrix_client: &MatrixClient) -> Result<(), ApiError> {
   let flows = login::get_login_flows(&matrix_client)?;
   let flow_count = flows.flows.len();
   println!("Available flows: ");
@@ -58,10 +55,10 @@ pub fn login_flow() -> Result<(), ApiError> {
   let selected_flow = &flows.flows[select_flow(flow_count)].r#type;
 
   match selected_flow {
-    auth::AuthenticationTypes::Password => login_password()?,
+    auth::AuthenticationTypes::Password => login_password(&matrix_client)?,
     _ => {
       println!("Unsupported");
-      login_flow()?
+      login_flow(&matrix_client)?
     }
   };
 

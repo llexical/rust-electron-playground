@@ -3,10 +3,8 @@ use matrix_api::client::MatrixClient;
 use matrix_api::*;
 
 use crate::io::request_input;
-use crate::MATRIX_API_URL;
 
-pub fn register_flow() -> Result<(), ApiError> {
-  let matrix_client = MatrixClient::new(MATRIX_API_URL);
+pub fn register_flow(matrix_client: &MatrixClient) -> Result<(), ApiError> {
   let interactive_auth_model = registration::auth_request(&matrix_client)?;
 
   println!("step 1");

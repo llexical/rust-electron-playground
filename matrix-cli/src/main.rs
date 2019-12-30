@@ -1,4 +1,5 @@
 extern crate matrix_api;
+use matrix_api::client::MatrixClient;
 
 mod io;
 mod list_public_rooms;
@@ -17,18 +18,23 @@ fn request_action() -> String {
     action
 }
 
-fn select_action(action: String) -> Result<(), matrix_api::api::ApiError> {
+fn select_action(
+    matrix_client: &MatrixClient,
+    action: String,
+) -> Result<(), matrix_api::api::ApiError> {
     match action.as_ref() {
-        "r" => register::register_flow(),
-        "l" => login::login_flow(),
-        "p" => list_public_rooms::list_rooms(),
-        _ => select_action(request_action()),
+        "r" => register::register_flow(&matrix_client),
+        "l" => login::login_flow(&matrix_client),
+        "p" => list_public_rooms::list_rooms(&matrix_client),
+        _ => select_action(&matrix_client, request_action()),
     }
 }
 
 fn main() {
+    let matrix_client = MatrixClient::new(MATRIX_API_URL);
+
     loop {
-        match select_action(request_action()) {
+        match select_action(&matrix_client, request_action()) {
             Err(e) => println!("Error: {}", e),
             Ok(_) => println!("Success"),
         }
