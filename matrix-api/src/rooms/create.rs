@@ -1,19 +1,22 @@
+use reqwest::StatusCode;
 use serde_derive::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 use crate::api;
 use crate::api::ApiError;
 use crate::api::Result;
+use crate::client::MatrixClient;
 
-"""
+/*
 Create Room
 API for creating a room
 
 docs: https://matrix.org/docs/spec/client_server/latest#post-matrix-client-r0-createroom
-"""
+*/
 
-pub static API_URL: &str = "http://my.matrix.host:8008/_matrix/client/r0/createRoom";
+pub static ENDPOINT: &str = "/_matrix/client/r0/createRoom";
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 pub enum VisibilityType {
   #[serde(rename = "public")]
   Public,
@@ -21,7 +24,7 @@ pub enum VisibilityType {
   Private,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 pub struct Invite3pid {
   pub id_server: String,
   pub id_access_token: String,
@@ -29,28 +32,28 @@ pub struct Invite3pid {
   pub address: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 pub struct PreviousRoom {
   pub room_id: String,
   pub event_id: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 pub struct CreationContent {
   #[serde(rename = "m.federate")]
   pub federate: Option<bool>,
   pub predecessor: Option<PreviousRoom>,
 }
 
-#[derive(Deserialize, Debug)]
-pub struct InitialState {
+#[derive(Serialize, Debug)]
+pub struct StateEvent {
   pub r#type: String,
   pub state_key: Option<String>,
   // TODO: Incorrect type definition, need to confirm what 'object' is
   pub content: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 pub enum PresetType {
   #[serde(rename = "private_chat")]
   PrivateChat,
@@ -60,13 +63,13 @@ pub enum PresetType {
   PublicChat,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 pub struct Notifications {
   pub room: u16,
 }
 
 // https://matrix.org/docs/spec/client_server/latest#m-room-power-levels
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 pub struct PowerLevels {
   pub ban: Option<u16>,
   // Mapping from event types to power level required
@@ -83,7 +86,7 @@ pub struct PowerLevels {
   pub notifications: Option<Notifications>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 pub struct CreateRoomRequest {
   pub visibility: Option<VisibilityType>,
   pub room_alias_name: Option<String>,
@@ -101,18 +104,21 @@ pub struct CreateRoomRequest {
 
 #[derive(Deserialize, Debug)]
 pub struct CreateRoomResponse {
-  room_id: String
+  room_id: String,
 }
 
-pub fn create_room(request: CreateRoomRequest) -> Result<CreateRoomResponse> {
-  let mut response = api::post(API_URL, &model)?;
+pub fn create_room(
+  client: &MatrixClient,
+  request: CreateRoomRequest,
+) -> Result<CreateRoomResponse> {
+  let mut response = api::post(&client, ENDPOINT, &request)?;
 
   match response.status() {
     StatusCode::OK => {
       let success = response.json()?;
       Ok(success)
     }
-    StatusCode::BAD_REQUEST | StatusCode::FORBIDDEN => {
+    StatusCode::BAD_REQUEST | StatusCode::FORBIDDEN | StatusCode::UNAUTHORIZED => {
       Err(ApiError::from(response))
     }
     s => Err(ApiError::from(s)),
