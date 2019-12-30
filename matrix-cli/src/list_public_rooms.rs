@@ -10,6 +10,12 @@ pub fn list_rooms(matrix_client: &MatrixClient) -> Result<(), ApiError> {
   };
   let response = rooms::public::list_public_rooms(&matrix_client, query)?;
 
+  // Test to see if matrix client has set the access token
+  match &matrix_client.access_token {
+    Some(access_token) => println!("Access Token: {}", access_token),
+    None => println!("No access token"),
+  }
+
   println!("total count: {}", response.total_room_count_estimate);
 
   for room in response.chunk {

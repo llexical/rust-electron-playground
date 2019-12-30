@@ -19,14 +19,14 @@ fn request_action() -> String {
 }
 
 fn select_action(
-    matrix_client: &MatrixClient,
+    matrix_client: &mut MatrixClient,
     action: String,
 ) -> Result<(), matrix_api::api::ApiError> {
     match action.as_ref() {
-        "r" => register::register_flow(&matrix_client),
-        "l" => login::login_flow(&matrix_client),
-        "p" => list_public_rooms::list_rooms(&matrix_client),
-        _ => select_action(&matrix_client, request_action()),
+        "r" => register::register_flow(matrix_client),
+        "l" => login::login_flow(matrix_client),
+        "p" => list_public_rooms::list_rooms(matrix_client),
+        _ => select_action(matrix_client, request_action()),
     }
 }
 
@@ -42,10 +42,10 @@ fn continue_check() -> bool {
 }
 
 fn main() {
-    let matrix_client = MatrixClient::new(MATRIX_API_URL);
+    let matrix_client = &mut MatrixClient::new(MATRIX_API_URL);
 
     loop {
-        match select_action(&matrix_client, request_action()) {
+        match select_action(matrix_client, request_action()) {
             Err(e) => println!("Error: {}", e),
             Ok(_) => println!("Success"),
         }
