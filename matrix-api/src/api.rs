@@ -175,15 +175,27 @@ impl From<reqwest::Response> for ApiError {
 
 pub type Result<T> = ::std::result::Result<T, ApiError>;
 
-pub fn post<TModel: serde::Serialize + ?Sized>(
+pub fn post<TBody: serde::Serialize + ?Sized>(
   api_client: &MatrixClient,
   endpoint: &str,
-  model: &TModel,
+  body: &TBody,
 ) -> Result<reqwest::Response> {
   let client = reqwest::Client::new();
   let url = format!("{}{}", api_client.get_base_url(), endpoint);
+  let response = client.post(&url).json(body).send()?;
 
-  let response = client.post(&url).json(model).send()?;
+  Ok(response)
+}
+
+pub fn post_query<TBody: serde::Serialize + ?Sized, TQuery: serde::Serialize + ?Sized>(
+  api_client: &MatrixClient,
+  endpoint: &str,
+  body: &TBody,
+  query: &TQuery,
+) -> Result<reqwest::Response> {
+  let client = reqwest::Client::new();
+  let url = format!("{}{}", api_client.get_base_url(), endpoint);
+  let response = client.post(&url).query(query).json(body).send()?;
 
   Ok(response)
 }
@@ -191,20 +203,18 @@ pub fn post<TModel: serde::Serialize + ?Sized>(
 pub fn get(api_client: &MatrixClient, endpoint: &str) -> Result<reqwest::Response> {
   let client = reqwest::Client::new();
   let url = format!("{}{}", api_client.get_base_url(), endpoint);
-
   let response = client.get(&url).send()?;
 
   Ok(response)
 }
 
-pub fn get_query<TModel: serde::Serialize + ?Sized>(
+pub fn get_query<TQuery: serde::Serialize + ?Sized>(
   api_client: &MatrixClient,
   endpoint: &str,
-  model: &TModel,
+  model: &TQuery,
 ) -> Result<reqwest::Response> {
   let client = reqwest::Client::new();
   let url = format!("{}{}", api_client.get_base_url(), endpoint);
-
   let response = client.get(&url).query(model).send()?;
 
   Ok(response)
