@@ -11,8 +11,8 @@ pub static ENDPOINT: &str = "/_matrix/client/r0/publicRooms";
 #[derive(Serialize, Debug)]
 pub struct PublicRoomsQuery {
   pub limit: i64,
-  pub since: String,
-  pub server: String,
+  pub since: Option<String>,
+  pub server: Option<String>,
 }
 
 #[derive(Serialize, Debug)]
@@ -21,9 +21,8 @@ pub struct PublicRoomsRequest {}
 #[derive(Deserialize, Debug)]
 pub struct PublicRoomsResponse {
   pub chunk: Vec<PublicRoomsChunk>,
-  pub next_batch: String,
-  pub home_server: String,
-  pub prev_batch: String,
+  pub next_batch: Option<String>,
+  pub prev_batch: Option<String>,
   pub total_room_count_estimate: i64,
 }
 
@@ -37,7 +36,7 @@ pub struct PublicRoomsChunk {
   pub topic: String,
   pub world_readable: bool,
   pub guest_can_join: bool,
-  pub avatar_url: String,
+  pub avatar_url: Option<String>,
 }
 
 pub fn list_public_rooms(
