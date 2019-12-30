@@ -1,6 +1,7 @@
 extern crate matrix_api;
 use matrix_api::client::MatrixClient;
 
+mod create_room;
 mod io;
 mod list_public_rooms;
 mod login;
@@ -13,6 +14,7 @@ fn request_action() -> String {
     println!("- register (r)");
     println!("- login (l)");
     println!("- list public rooms (p)");
+    println!("- create room (c)");
     let mut action = String::new();
     io::request_input("", &mut action);
     action
@@ -26,6 +28,7 @@ fn select_action(
         "r" => register::register_flow(matrix_client),
         "l" => login::login_flow(matrix_client),
         "p" => list_public_rooms::list_rooms(matrix_client),
+        "c" => create_room::create(matrix_client),
         _ => select_action(matrix_client, request_action()),
     }
 }

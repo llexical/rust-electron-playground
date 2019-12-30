@@ -41,13 +41,16 @@ pub struct PreviousRoom {
 #[derive(Serialize, Debug)]
 pub struct CreationContent {
   #[serde(rename = "m.federate")]
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub federate: Option<bool>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub predecessor: Option<PreviousRoom>,
 }
 
 #[derive(Serialize, Debug)]
 pub struct StateEvent {
   pub r#type: String,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub state_key: Option<String>,
   // TODO: Incorrect type definition, need to confirm what 'object' is
   pub content: String,
@@ -71,34 +74,56 @@ pub struct Notifications {
 // https://matrix.org/docs/spec/client_server/latest#m-room-power-levels
 #[derive(Serialize, Debug)]
 pub struct PowerLevels {
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub ban: Option<u16>,
   // Mapping from event types to power level required
   // TODO: Make more specific (limit to matrix event types)
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub events: Option<HashMap<String, u16>>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub events_default: Option<u16>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub invite: Option<u16>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub kick: Option<u16>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub redact: Option<u16>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub state_default: Option<u16>,
   // Mapping from user id's to power level for each user
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub users: Option<HashMap<String, u16>>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub users_default: Option<u16>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub notifications: Option<Notifications>,
 }
 
 #[derive(Serialize, Debug)]
 pub struct CreateRoomRequest {
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub visibility: Option<VisibilityType>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub room_alias_name: Option<String>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub name: Option<String>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub topic: Option<String>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub invite: Option<Vec<String>>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub invite_3pid: Option<Vec<Invite3pid>>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub room_version: Option<String>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub creation_content: Option<CreationContent>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub initial_state: Option<Vec<StateEvent>>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub preset: Option<PresetType>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub is_direct: Option<bool>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub power_level_content_override: Option<PowerLevels>,
 }
 
