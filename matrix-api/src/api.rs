@@ -1,3 +1,4 @@
+use reqwest::header::AUTHORIZATION;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::error;
@@ -175,6 +176,17 @@ impl From<reqwest::Response> for ApiError {
 
 pub type Result<T> = ::std::result::Result<T, ApiError>;
 
+pub fn add_request_authorization(
+  api_client: &MatrixClient,
+  request: reqwest::RequestBuilder,
+) -> reqwest::RequestBuilder {
+  // Adds request authorization to any reqwest request builder
+  match &api_client.access_token {
+    Some(access_token) => request.header(AUTHORIZATION, access_token),
+    None => request,
+  }
+}
+
 pub fn post<TBody: serde::Serialize + ?Sized>(
   api_client: &MatrixClient,
   endpoint: &str,
@@ -182,7 +194,9 @@ pub fn post<TBody: serde::Serialize + ?Sized>(
 ) -> Result<reqwest::Response> {
   let client = reqwest::Client::new();
   let url = format!("{}{}", api_client.get_base_url(), endpoint);
-  let response = client.post(&url).json(body).send()?;
+  let mut request = client.post(&url).json(body);
+  request = add_request_authorization(api_client, request);
+  let response = request.send()?;
 
   Ok(response)
 }
@@ -195,7 +209,9 @@ pub fn post_query<TBody: serde::Serialize + ?Sized, TQuery: serde::Serialize + ?
 ) -> Result<reqwest::Response> {
   let client = reqwest::Client::new();
   let url = format!("{}{}", api_client.get_base_url(), endpoint);
-  let response = client.post(&url).query(query).json(body).send()?;
+  let mut request = client.post(&url).query(query).json(body);
+  request = add_request_authorization(api_client, request);
+  let response = request.send()?;
 
   Ok(response)
 }
@@ -203,7 +219,9 @@ pub fn post_query<TBody: serde::Serialize + ?Sized, TQuery: serde::Serialize + ?
 pub fn get(api_client: &MatrixClient, endpoint: &str) -> Result<reqwest::Response> {
   let client = reqwest::Client::new();
   let url = format!("{}{}", api_client.get_base_url(), endpoint);
-  let response = client.get(&url).send()?;
+  let mut request = client.get(&url);
+  request = add_request_authorization(api_client, request);
+  let response = request.send()?;
 
   Ok(response)
 }
@@ -215,7 +233,10 @@ pub fn get_query<TQuery: serde::Serialize + ?Sized>(
 ) -> Result<reqwest::Response> {
   let client = reqwest::Client::new();
   let url = format!("{}{}", api_client.get_base_url(), endpoint);
-  let response = client.get(&url).query(model).send()?;
+
+  let mut request = client.get(&url).query(model);
+  request = add_request_authorization(api_client, request);
+  let response = request.send()?;
 
   Ok(response)
 }

@@ -18,7 +18,7 @@ impl MatrixClient {
 
   // Set the users access token (e.g. login)
   pub fn set_access_token(&mut self, access_token: String) {
-    self.access_token = Some(access_token);
+    self.access_token = Some(format!("Bearer {}", access_token));
   }
 
   // Return access token as an Option
