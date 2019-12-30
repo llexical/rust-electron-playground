@@ -5,6 +5,8 @@ mod list_public_rooms;
 mod login;
 mod register;
 
+use matrix_api::client::ApiClient;
+
 fn request_action() -> String {
     println!("Select ation:");
     println!("- register (r)");
@@ -24,11 +26,26 @@ fn select_action(action: String) -> Result<(), matrix_api::api::ApiError> {
     }
 }
 
+fn continue_check() -> bool {
+    println!("Continue? (y/n)");
+    let mut action = String::new();
+    io::request_input("", &mut action);
+    match action.as_ref() {
+        "Y" | "y" => true,
+        "N" | "n" => false,
+        _ => continue_check(),
+    }
+}
+
 fn main() {
     loop {
         match select_action(request_action()) {
             Err(e) => println!("Error: {}", e),
             Ok(_) => println!("Success"),
+        }
+        if !continue_check() {
+            println!("Goodbye!");
+            break;
         }
         println!();
     }
