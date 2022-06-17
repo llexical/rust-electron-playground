@@ -21,7 +21,7 @@
     "electron-squirrel-startup": "^1.0.0"
   },
   "devDependencies": {
-    "electron": "6.0.12",
+    "electron": "15.5.5",
     "electron-rebuild": "^1.8.6",
     "neon-cli": "^0.3.2"
   }
